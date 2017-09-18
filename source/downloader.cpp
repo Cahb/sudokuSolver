@@ -3,7 +3,8 @@ void downloader::Pauser(bool *STOP, bool *PAUSE, bool *TOSKIP, mutex *mtx)
 {
     while(1)
     {
-        char c= getch();
+        char c;
+        scanf("%c", &c);
         mtx->lock();
         if(c == 'P' || c == 'p')
         {
@@ -23,7 +24,7 @@ void downloader::Pauser(bool *STOP, bool *PAUSE, bool *TOSKIP, mutex *mtx)
     }
 }
 
-
+#if BUILD_WITH_DOWNLOADER
 bool downloader::getSudokuList(bool *STOP,bool *PAUSE, mutex *mtx, int indexBeg, int indexEnd,char *fName)
 {
     CURL *crl =  curl_easy_init();
@@ -88,5 +89,5 @@ bool downloader::getSudokuList(bool *STOP,bool *PAUSE, mutex *mtx, int indexBeg,
     *STOP;
     return 1;
 }
-
+#endif
 

@@ -3,7 +3,11 @@
 #pragma once
 #include <iostream>
 #include <string.h>
+#ifdef _WIN32
 #include <conio.h>
+#elif __linux__ 
+#include <curses.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>

@@ -278,11 +278,12 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
     solver::byte staticElements =0;
     solver::byte autoFilled=0;
     solver::byte length=0;
-    
+    /*
     do
     {
         autoFilled = fillSingleCells(grid,0);
     }while(autoFilled > 0);
+    */
     for(int i = 0; i < projections->size();i++)
     {
         if((*grid)[(*projections)[i].x][(*projections)[i].y] != '0' && (*grid)[(*projections)[i].x][(*projections)[i].y] != '-' )
@@ -290,10 +291,7 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
             projections->erase(projections->begin() + i);
         }
     }
-    
     autoFilled = 0;
-    // /*
-    
     for(int i = 0; i < 9;i++)
     {
         for(int j = 0; j < 9;j++)
@@ -339,6 +337,7 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
     }
     currIndex[0] = firstIndexes[0];
     currIndex[1] = firstIndexes[1];
+    
     for(int i = 0; i < length;i++)
     {
         if(inputs[i].numberOfValues == 1)
@@ -384,7 +383,7 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
                 i=j=10;
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 printf("CAN'T SOLVE 1\n");
-                skippedSudoku("skippedSdk.sdk", 1, "1 (BAD GRID??)",ID);
+                skippedSudoku(SKP_FILE, 1, "1 (BAD GRID??)",ID);
                 break;
             }
             stepForwardIndexes(currIndex);
@@ -399,8 +398,11 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
             if((*grid)[currIndex[0]][currIndex[1]] == '-' || (*grid)[currIndex[0]][currIndex[1]] == '0')
             {
                 tempPointer = elementOfPossibleInputs(currIndex[0],currIndex[1], inputs, length);
+                if(!tempPointer)
+                    continue;
                 (*grid)[currIndex[0]][currIndex[1]] = tempPointer->possibleValues[tempPointer->currentPosition];
-                if(!checkPosition(grid, currIndex, (*grid)[currIndex[0]][currIndex[1]],1,0) && tempPointer->currentPosition +1 < tempPointer->numberOfValues)
+                if(!checkPosition(grid, currIndex, (*grid)[currIndex[0]][currIndex[1]],1,0) 
+                    && tempPointer->currentPosition +1 < tempPointer->numberOfValues)
                 {
                     do
                     {
@@ -418,37 +420,31 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
                             *toSkip = true;
                             std::this_thread::sleep_for(chrono::seconds(1));
                             
-                            skippedSudoku("skippedSdk.sdk", 1, "2",ID);
+                            skippedSudoku(SKP_FILE, 1, "2",ID);
                             continue;
                         }
                         while(1)
                         {
-                            
                             tempPointer = elementOfPossibleInputs(currIndex[0],currIndex[1], inputs, length); 
                             if(currIndex[0] < 0 || currIndex[1] < 0)
                             {
                                 *toSkip = true;
-                                skippedSudoku("skippedSdk.sdk", 1, "grid_index_is < 0",ID);
+                                skippedSudoku(SKP_FILE, 1, "grid_index_is < 0",ID);
                                 break;
                             }
                             if(gridConst[currIndex[0]][currIndex[1]] != '-' && gridConst[currIndex[0]][currIndex[1]] != '0')
                             {
                                 if(currIndex[0] == 0 && currIndex[1] == 0)
                                 {
-                                    //printf("SOL#1\n");
                                     *toSkip = true;
-                                    //cout << "SKIPPING - can't solve solution\n";
-                                    //getch();
                                     std::this_thread::sleep_for(chrono::seconds(1));
-                                    skippedSudoku("skippedSdk.sdk", 1, "3",ID);
-                                    //printf("CAN'T SOLVE 3\n");
-                                    //getch();
+                                    skippedSudoku(SKP_FILE, 1, "3",ID);
                                     break;
                                 }
                                 stepBackwardIndexes(currIndex);
                                 continue;
                             }
-                            else if( tempPointer != NULL &&/*(*grid)[currIndex[0]][currIndex[1]] < '9' */ tempPointer->currentPosition + 1 < tempPointer->numberOfValues)
+                            else if( tempPointer != NULL && tempPointer->currentPosition + 1 < tempPointer->numberOfValues)
                             {
                                 tempPointer->currentPosition++;
                                 (*grid)[currIndex[0]][currIndex[1]] = tempPointer->possibleValues[tempPointer->currentPosition];
@@ -482,10 +478,8 @@ solver::grdPtr* solver::solve(grdPtr *grid, int currIndex[2], bool *toSkip,vecto
                 }
                 else
                 {
-                
                     if(tempPointer != NULL && /*(*grid)[currIndex[0]][currIndex[1]] < '9' */ tempPointer->currentPosition +1 < tempPointer->numberOfValues)
                     {
-                        //(*grid)[currIndex[0]][currIndex[1]]++;
                         tempPointer->currentPosition++;
                         (*grid)[currIndex[0]][currIndex[1]] = tempPointer->possibleValues[tempPointer->currentPosition];
                     }

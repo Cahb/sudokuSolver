@@ -11,6 +11,12 @@
 #include <time.h>
 #include "parser.h"
 #include <vector>
+#ifdef _WIN32
+#define CLEAR_SCREEN() system("cls")
+#else 
+#define CLEAR_SCREEN() system("clear")
+#endif
+
 // http://sudoku.org.ua/t/map.php?id=
 using namespace std;
 
@@ -48,7 +54,7 @@ solver::grdPtr* Solve(solver::grdPtr *grid, bool save,string filePath,char ID[6]
     return grid;
 }
 
-string getSudokuFromFile(char *fName="tempSdk2.txt", char *ID="-1", long long int *filePointer=0)
+string getSudokuFromFile(char *fName="tempSdk2.txt", char *id="-1", long long int *filePointer=0)
 {
     ifstream in(fName, ios_base::in);
     string buf;
@@ -63,8 +69,8 @@ string getSudokuFromFile(char *fName="tempSdk2.txt", char *ID="-1", long long in
             buf.clear();
             getline(in, buf, '\n');
             *filePointer = in.tellg();
-        }while(!in.eof() && (strcmp(ID, (parser::extractKey(buf, "mapId")).c_str())!= 0) );
-        if(strcmp(ID, (parser::extractKey(buf, "mapId").c_str())) == 0)
+        }while(!in.eof() && (strcmp(id, (parser::extractKey(buf, "mapId")).c_str())!= 0) );
+        if(strcmp(id, (parser::extractKey(buf, "mapId").c_str())) == 0)
         {
             in.close();
             return buf;
@@ -314,13 +320,13 @@ int main(void)
         scanf("%d", &toIterateFromIndex);
         printf("To begin, please enter END index\n");
         scanf("%d", &toIterateToIndex);
-        system("cls");
-        thread stopThread(downloader::Pauser, &stop, &pause, &toSkip,&mtx);
-        stopThread.detach();
+        CLEAR_SCREEN();
+        //thread stopThread(downloader::Pauser, &stop, &pause, &toSkip,&mtx);
+        //stopThread.detach();
         for(int i = toIterateFromIndex; i < toIterateToIndex;i++) // 423 3827 3835 4127 4174
         {
             sprintf(tmp, "%d", i);
-            sudoku = getSudokuFromFile("SDKS.dat", tmp, &filePointer);
+            sudoku = getSudokuFromFile((DAT_FILE), tmp, &filePointer);
             //getch();
             if(sudoku.size() < 4 || sudoku == "{}")
             {
@@ -378,9 +384,8 @@ int main(void)
                 }
             }
             printf("AFTER_ERASE:%d\n", vectorPointer.size());
-            //getch();
-            gridPointer = Solve(gridPointer, 1, "tempSdk2.txt", ID, &toSkip,vectorPointer);
-            system("cls");
+            gridPointer = Solve(gridPointer, 1, SLV_FILE, ID, &toSkip,vectorPointer);
+            CLEAR_SCREEN();
             time2 = clock();
             timediff = time2 - time1;
             timediff_sec = ((float)timediff) / CLOCKS_PER_SEC;
@@ -400,7 +405,7 @@ int main(void)
             {
                 mtx.lock();
                 printf("\nPROGRAM IS NOW IDLE...PRESS ANY KEY TO CONTINUE\n");
-                getch();
+                //getch();
                 printf("NOW CONTINUING...\n");
                 //std::this_thread::sleep_for(chrono::seconds(1));           
                 pause = false;
@@ -419,6 +424,7 @@ int main(void)
             tempVectorPointer.erase(vectorPointer.begin(), vectorPointer.end());
             }
         }
+#if defined (BUILD_WITH_DOWNLOADER)&&BUILD_WITH_DOWNLOADER
     else
     {
         char fName[20];
@@ -428,14 +434,17 @@ int main(void)
         scanf("%d", &toIterateFromIndex);
         printf("To begin, please enter END index\n");
         scanf("%d", &toIterateToIndex);
-        system("cls");    
+        CLEAR_SCREEN();
         thread stopThread(downloader::Pauser, &stop, &pause, &toSkip,&mtx);
         stopThread.detach();
         return downloader::getSudokuList(&stop, &pause, &mtx, toIterateFromIndex, toIterateToIndex,fName);
                
     }
+#endif
         printf("PROGRAM HAS BEEN STOPPED!\n");
-        getch();
+        //getch();
         return 0;  
+
+    
 }
 
